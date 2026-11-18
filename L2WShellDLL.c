@@ -7,7 +7,7 @@
 #define MAX_LINE 1024
 #define MAX_ARGS 16
 
-__declspec(dllimport) int __cdecl ParseCommand(char *line, char *args[], int limit)
+__declspec(dllexport) int __cdecl ParseCommand(char* line, char* args[], int limit)
 {
     int count = 0;
     char *readp = line;
@@ -41,10 +41,7 @@ __declspec(dllimport) int __cdecl ParseCommand(char *line, char *args[], int lim
     return count;
 }
 
-__declspec(dllexport) int __cdecl ParseCommand(void)
-{
-    return 0;
-}
+
 
 static int approved_verb(const char *verb)
 {
@@ -88,7 +85,7 @@ static int append_token(char *out, size_t capacity, const char *token)
     return 1;
 }
 
-__declspec(dllexport) int __stdcall ExecuteCmd(
+__declspec(dllexport) int __cdecl ExecuteCommand(
     const char *windows_verb, const char *const args[], int argc)
 {
     char command[MAX_LINE * 2] = {0};
@@ -103,7 +100,7 @@ __declspec(dllexport) int __stdcall ExecuteCmd(
         puts("Invalid command.");
         return 1;
     }
-    strcpy(command, windows_verb);
+    strcpy_s(command, sizeof(command), windows_verb);
     for (i = 0; i < argc; ++i) {
         if (!safe_argument(args[i]) ||
             !append_token(command, sizeof(command), args[i])) {
@@ -128,16 +125,4 @@ __declspec(dllexport) int __stdcall ExecuteCmd(
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);
     return (int)code;
-}
-
-__declspec(dllexport) int __cdecl ExecuteCommand(void)
-{
-    return 0;
-}
-
-#pragma comment(linker, "/EXPORT:MissingFunction=_MissingFunction@0")
-
-static int __cdecl HiddenFunction(int x)
-{
-    return x;
 }
